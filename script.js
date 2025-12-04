@@ -426,9 +426,9 @@ document.addEventListener('mousemove', function(event) {
     
     if (!mouseUpdateTicking) {
         requestAnimationFrame(() => {
-            updateTrailCircles();
+    updateTrailCircles();
             mouseUpdateTicking = false;
-        });
+});
         mouseUpdateTicking = true;
     }
 }, { passive: true });
@@ -579,59 +579,32 @@ function initializeScrollIndicator() {
     });
 }
 
-// Typing Effect for Hero Title
-// Gelişmiş Typing Effect - Kelimeleri yazıp silme döngüsü
+// Typing Effect for Hero Title - English only
 function initializeTypingEffect() {
     const typingElement = document.querySelector('.typing-text');
     if (!typingElement) return;
     
-    // Get original HTML content
-    const originalHTML = typingElement.innerHTML;
-    
-    // Kelimeler dizisi
-    const words = ["Computer Engineering Student", "Software Developer", "Tech Enthusiast"];
-    let wordIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let typingSpeed = 100;
-    const deletingSpeed = 50;
-    const pauseDuration = 2000;
-    
     // Clear and prepare for typing animation
     const baseText = "Hello, I'm ";
+    const nameText = "Bilal";
     typingElement.innerHTML = baseText;
     typingElement.style.opacity = '1';
     typingElement.style.visibility = 'visible';
     
+    let charIndex = 0;
+    let typingSpeed = 100;
+    
     function type() {
-        const currentWord = words[wordIndex];
-        let currentText = baseText;
-        
-        if (!isDeleting && charIndex < currentWord.length) {
-            // Typing
-            currentText += currentWord.substring(0, charIndex + 1);
-            typingElement.innerHTML = currentText + '<span class="typing-cursor"></span>';
+        if (charIndex < nameText.length) {
+            // Typing "Bilal" - name kısmını renkli göster
+            const typedName = nameText.substring(0, charIndex + 1);
+            typingElement.innerHTML = baseText + '<span class="text-primary-600 dark:text-primary-400">' + typedName + '</span><span class="typing-cursor"></span>';
             charIndex++;
-            typingSpeed = 100;
-        } else if (!isDeleting && charIndex === currentWord.length) {
-            // Pause at end of word
-            typingSpeed = pauseDuration;
-            isDeleting = true;
-        } else if (isDeleting && charIndex > 0) {
-            // Deleting
-            charIndex--;
-            currentText += currentWord.substring(0, charIndex);
-            typingElement.innerHTML = currentText + '<span class="typing-cursor"></span>';
-            typingSpeed = deletingSpeed;
-        } else if (isDeleting && charIndex === 0) {
-            // Move to next word
-            isDeleting = false;
-            wordIndex = (wordIndex + 1) % words.length;
-            typingSpeed = 500; // Pause before typing next word
-            typingElement.innerHTML = baseText + '<span class="typing-cursor"></span>';
+            setTimeout(type, typingSpeed);
+        } else {
+            // "Hello, I'm Bilal" tamamlandı - cursor'ı kaldır
+            typingElement.innerHTML = baseText + '<span class="text-primary-600 dark:text-primary-400">' + nameText + '</span>';
         }
-        
-        setTimeout(type, typingSpeed);
     }
     
     // Start typing after a short delay
@@ -855,6 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
         themeToggleBtn.addEventListener('click', toggleTheme);
     }
     
+    initializeWelcomeScreen();
     initializeInteractiveBackground();
     initializeMouseTrail();
     initializeScrollProgress();
@@ -872,6 +846,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeAOS();
     initializeWelcomeScreen();
 });
+
+
+// Theme Notification - Show once on first visit (original function for backward compatibility)
+function initializeThemeNotification() {
+    // This function is kept for backward compatibility but won't be called
+    // The notification is now shown after typing effect completes
+}
 
 
 // Initialize Projects
@@ -1157,34 +1138,52 @@ function initializeProjectCarousel(projectCard, totalSlides, autoSlide = true) {
         }
     }
     
-    // Event listeners
+    // Event listeners - Click and Touch support for mobile
+    const handleNext = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (autoSlide) {
+            stopAutoSlide();
+            nextSlide();
+            startAutoSlide();
+        } else {
+            nextSlide();
+        }
+    };
+    
+    const handlePrev = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (autoSlide) {
+            stopAutoSlide();
+            prevSlide();
+            startAutoSlide();
+        } else {
+            prevSlide();
+        }
+    };
+    
     if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            if (autoSlide) {
-                stopAutoSlide();
-                nextSlide();
-                startAutoSlide();
-            } else {
-                nextSlide();
-            }
-        });
+        nextBtn.addEventListener('click', handleNext);
+        nextBtn.addEventListener('touchend', handleNext);
     }
     
     if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            if (autoSlide) {
-                stopAutoSlide();
-                prevSlide();
-                startAutoSlide();
-            } else {
-                prevSlide();
-            }
-        });
+        prevBtn.addEventListener('click', handlePrev);
+        prevBtn.addEventListener('touchend', handlePrev);
     }
     
-    // Dot'lara tıklama
+    // Dot'lara tıklama - Click and Touch support
     dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => {
+        const handleDotClick = (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             if (autoSlide) {
                 stopAutoSlide();
                 showSlide(index);
@@ -1192,7 +1191,9 @@ function initializeProjectCarousel(projectCard, totalSlides, autoSlide = true) {
             } else {
                 showSlide(index);
             }
-        });
+        };
+        dot.addEventListener('click', handleDotClick);
+        dot.addEventListener('touchend', handleDotClick);
     });
     
     // Mouse hover'da durdur (sadece auto slide aktifse)
@@ -1276,14 +1277,14 @@ function initializeProjectModal(projectCard, projectId, totalSlides) {
         }, 300);
     };
     
-    // Preview butonuna tıklama
-    previewBtn.addEventListener('click', (e) => {
+    // Preview butonuna tıklama - Click and Touch support for mobile
+    const handlePreviewClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         openModal();
-    });
-    
-    // Debug için
+    };
+    previewBtn.addEventListener('click', handlePreviewClick);
+    previewBtn.addEventListener('touchend', handlePreviewClick);
     
     // Modal kapatma
     if (closeBtn) {
@@ -1351,25 +1352,43 @@ function initializeModalCarousel(modal, totalSlides) {
         showSlide(prev);
     }
     
-    if (nextBtn) {
-        nextBtn.addEventListener('click', (e) => {
+    // Event listeners - Click and Touch support for mobile
+    const handleNext = (e) => {
+        if (e) {
+            e.preventDefault();
             e.stopPropagation();
-            nextSlide();
-        });
+        }
+        nextSlide();
+    };
+    
+    const handlePrev = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        prevSlide();
+    };
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', handleNext);
+        nextBtn.addEventListener('touchend', handleNext);
     }
     
     if (prevBtn) {
-        prevBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            prevSlide();
-        });
+        prevBtn.addEventListener('click', handlePrev);
+        prevBtn.addEventListener('touchend', handlePrev);
     }
     
     dots.forEach((dot, index) => {
-        dot.addEventListener('click', (e) => {
-            e.stopPropagation();
+        const handleDotClick = (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
             showSlide(index);
-        });
+        };
+        dot.addEventListener('click', handleDotClick);
+        dot.addEventListener('touchend', handleDotClick);
     });
     
     // Klavye ile kontrol
@@ -1947,38 +1966,110 @@ function initializeAOS() {
     });
 }
 
-// Welcome Screen - Gelişmiş Loading Screen
+// Empty function for backward compatibility
 function initializeWelcomeScreen() {
-    const welcomeScreen = document.getElementById('welcome-screen');
-    const loadingScreen = document.getElementById('loading-screen');
-    
-    if (!welcomeScreen && !loadingScreen) return;
-    
-    // Welcome screen varsa onu kullan
-    if (welcomeScreen) {
-        welcomeScreen.style.display = 'flex';
-        setTimeout(() => {
-            welcomeScreen.classList.add('hidden');
-            setTimeout(() => {
-                welcomeScreen.style.display = 'none';
-                if (loadingScreen) {
-                    loadingScreen.classList.add('hidden');
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                    }, 500);
-                }
-            }, 800);
-        }, 3000);
-    } else if (loadingScreen) {
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                }, 500);
-            }, 800);
-        });
-    }
+    // Function kept for compatibility but does nothing
 }
 
+// Initialize Welcome Screen
+function initializeWelcomeScreen() {
+    const welcomeScreen = document.getElementById('welcome-screen');
+    const welcomeText = document.getElementById('welcome-text');
+    
+    if (!welcomeScreen || !welcomeText) return;
+    
+    // Add active class to body for blur effect
+    document.body.classList.add('welcome-active');
+    welcomeScreen.classList.add('active');
+    
+    // Split text into letters
+    const text = welcomeText.textContent;
+    welcomeText.innerHTML = '';
+    text.split('').forEach((char, index) => {
+        const span = document.createElement('span');
+        span.className = 'letter';
+        span.textContent = char === ' ' ? '\u00A0' : char;
+        span.style.transitionDelay = `${index * 0.02}s`;
+        welcomeText.appendChild(span);
+    });
+    
+    // Show welcome text after a brief delay
+                        setTimeout(() => {
+        welcomeText.classList.add('show');
+    }, 100);
+    
+    // After 2 seconds, explode letters into particles
+                            setTimeout(() => {
+        explodeTextToParticles(welcomeText, welcomeScreen);
+    }, 2000);
+}
+
+function explodeTextToParticles(textElement, screenElement) {
+    const letters = textElement.querySelectorAll('.letter');
+    const canvas = document.getElementById('interactive-bg');
+    
+    // Wait for particles to be ready
+    const checkParticles = setInterval(() => {
+        if (particles && particles.length > 0 && canvas) {
+            clearInterval(checkParticles);
+            performExplosion(letters, canvas, textElement, screenElement);
+        }
+    }, 100);
+    
+    // Fallback: if particles not ready after 3 seconds, just fade out
+                        setTimeout(() => {
+        clearInterval(checkParticles);
+        if (!particles || particles.length === 0) {
+            textElement.classList.add('exploding');
+                            setTimeout(() => {
+                screenElement.classList.remove('active');
+                document.body.classList.remove('welcome-active');
+            }, 1000);
+        }
+    }, 3000);
+}
+
+function performExplosion(letters, canvas, textElement, screenElement) {
+    const rect = canvas.getBoundingClientRect();
+    
+    // Calculate target positions (random positions on canvas)
+    letters.forEach((letter, index) => {
+        const letterRect = letter.getBoundingClientRect();
+        const letterX = letterRect.left + letterRect.width / 2;
+        const letterY = letterRect.top + letterRect.height / 2;
+        
+        // Convert to canvas coordinates
+        const canvasX = letterX - rect.left;
+        const canvasY = letterY - rect.top;
+        
+        // Find nearest particle or create target position
+        let targetX, targetY;
+        if (particles.length > index) {
+            // Use existing particle position
+            targetX = particles[index].x;
+            targetY = particles[index].y;
+        } else {
+            // Random position on canvas
+            targetX = Math.random() * canvas.width;
+            targetY = Math.random() * canvas.height;
+        }
+        
+        // Calculate distance to travel
+        const dx = targetX - canvasX;
+        const dy = targetY - canvasY;
+        
+        // Set CSS variables for animation
+        letter.style.setProperty('--target-x', `${dx}px`);
+        letter.style.setProperty('--target-y', `${dy}px`);
+    });
+    
+    // Start explosion animation
+    textElement.classList.add('exploding');
+    
+    // Remove welcome screen after animation
+    setTimeout(() => {
+        screenElement.classList.remove('active');
+        document.body.classList.remove('welcome-active');
+    }, 1000);
+}
 
